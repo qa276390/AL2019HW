@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+using namespace std;
 
 class Edge{
 public:
@@ -12,6 +13,14 @@ public:
 	Edge(int l, int f, int c){length=l;flow=f;capacity=c;}
 
 };
+class Node{
+public:
+	int x;
+	int y;
+	int s;
+	Node(){x=0;y=0;s=0}
+	Node(int xx, int yy, int ss){x=xx;y=yy;s=ss;}
+}
 class Graph_FlowNetWorks{
 private:
     int num_vertex;
@@ -107,13 +116,56 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
     }
     std::cout << "Possible Maximum Flow:"  << maxflow << std::endl;
 }
-void Graph_FlowNetWorks::AddEdge(int from, int to, int capacity){
+void Graph_FlowNetWorks::AddEdge(int from, int to, int capacity, int length){
 
     AdjMatrix[from][to]->capacity = capacity;
+    AdjMatrix[from][to]->length = length;
 }
 
-int main(){
-    Graph_FlowNetWorks g11(6);
+int main(int argc, char* argv[]){
+
+	if(argc!=2)
+	{	cout<<"please add 2 parameters!"<<endl;
+		return 0;		
+	}
+	char * infile = argv[1];
+	char * outfile = argv[2];
+
+
+	ifstream myfile(infile.c_str());
+	int x, y, s;
+	int n_node = 0;
+	int n_source = 0;
+	int n_sink = 0;
+	vector<Node*> sourcevec;
+	vector<Node*> sinkvec;
+	char *line;	
+	if (myfile.is_open())
+  	{
+		
+    	while ( getline (myfile,line) )
+    	{
+			ss.str("");
+			ss.clear();
+			ss<<line;
+			if(n_node==0)
+				ss>>n_node;
+			else{
+				ss>>x>>y>>s;
+				if(s>0)
+				{//source
+					sourcevec.push_back(new Node(x, y, s));
+					n_source++;
+				}else{
+				//sink
+					sink.push_back(new Node(x, y, s));
+					n_sink++;
+				}
+			}
+    	}
+	int n_edges = n_source + n_sink + n_source*n_sink;
+    Graph_FlowNetWorks g11(n_edges);
+
 
     g11.AddEdge(0, 1, 9);g11.AddEdge(0, 3, 9);
     g11.AddEdge(1, 2, 3);g11.AddEdge(1, 3, 8);
