@@ -2,6 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <math.h>
+#include <fstream>
+#include <string>
+#include <sstream>
 using namespace std;
 
 class Edge{
@@ -18,9 +22,9 @@ public:
 	int x;
 	int y;
 	int s;
-	Node(){x=0;y=0;s=0}
+	Node(){x=0;y=0;s=0;}
 	Node(int xx, int yy, int ss){x=xx;y=yy;s=ss;}
-}
+};
 class Graph_FlowNetWorks{
 private:
     int num_vertex;
@@ -28,15 +32,26 @@ private:
 public:
     Graph_FlowNetWorks():num_vertex(0){};
     Graph_FlowNetWorks(int n);
-    void AddEdge(int from, int to, int capacity);
+    void AddEdge(int from, int to, int capacity, int length);
 
     void FordFulkerson(int source, int termination);
     bool BFSfindExistingPath(std::vector<std::vector<Edge*> > graphResidual, 
                              int *predecessor, int source, int termination);
     int MinCapacity(std::vector<std::vector<Edge*> > graphResidual, 
                     int *predecessor, int termination);
+	void ShowAdjMat();
 
 };
+void Graph_FlowNetWorks::ShowAdjMat(){
+	cout<<"# of edges="<<num_vertex<<endl;
+	
+    for (int i = 0; i < num_vertex; i++){
+		for(int j = 0; j < num_vertex; j++)
+			cout<<AdjMatrix[i][j]->capacity<<" ";
+		cout<<endl;
+	}
+
+}
 Graph_FlowNetWorks::Graph_FlowNetWorks(int n):num_vertex(n){
     // constructor
     AdjMatrix.resize(num_vertex);
@@ -124,12 +139,12 @@ void Graph_FlowNetWorks::AddEdge(int from, int to, int capacity, int length){
 
 int main(int argc, char* argv[]){
 
-	if(argc!=2)
+	if(argc!=3)
 	{	cout<<"please add 2 parameters!"<<endl;
 		return 0;		
 	}
-	char * infile = argv[1];
-	char * outfile = argv[2];
+	string infile = argv[1];
+	string outfile = argv[2];
 
 
 	ifstream myfile(infile.c_str());
@@ -139,7 +154,8 @@ int main(int argc, char* argv[]){
 	int n_sink = 0;
 	vector<Node*> sourcevec;
 	vector<Node*> sinkvec;
-	char *line;	
+	string line;	
+  	stringstream ss;
 	if (myfile.is_open())
   	{
 		
@@ -158,21 +174,33 @@ int main(int argc, char* argv[]){
 					n_source++;
 				}else{
 				//sink
-					sink.push_back(new Node(x, y, s));
+					sinkvec.push_back(new Node(x, y, s));
 					n_sink++;
 				}
 			}
     	}
-	int n_edges = n_source + n_sink + n_source*n_sink;
-    Graph_FlowNetWorks g11(n_edges);
-
-
-    g11.AddEdge(0, 1, 9);g11.AddEdge(0, 3, 9);
-    g11.AddEdge(1, 2, 3);g11.AddEdge(1, 3, 8);
-    g11.AddEdge(2, 4, 2);g11.AddEdge(2, 5, 9);
-    g11.AddEdge(3, 2, 7);g11.AddEdge(3, 4, 7);
-    g11.AddEdge(4, 2, 4);g11.AddEdge(4, 5, 8);
-
-    g11.FordFulkerson(0, 5);    // 指定source為vertex(0), termination為vertex(5)
+		int n_edges = n_source + n_sink + n_source*n_sink;
+		Graph_FlowNetWorks graph(n_edges);
+		Node *Si;
+		Node *Tj;
+		for(int i = 0; i < n_source; i++)
+		{
+			Si = sourcevec[i];
+			//from S to Si(i+1)
+			graph.AddEdge(0, i+1, Si->s, 0);
+			//from Si to Tj
+			for(int j = 0; j < n_sink; j++)
+			{
+				Tj = sinkvec[j];
+				if(i==0)
+				{
+					graph.AddEdge(j+1+(n_source), n_source+n_sink+1, -(Tj->s), 0);
+				}
+				graph.AddEdge(i+1, j+1+(n_source), Si->s, sqrt(pow((Si->x - Tj->x),2)+pow((Si->y - Tj->y),2)));
+			}
+		}
+		graph.ShowAdjMat();
+		graph.FordFulkerson(0, n_edges-1);    // 指定source為vertex(0), termination為vertex(5)
+	}
     return 0;
 }
