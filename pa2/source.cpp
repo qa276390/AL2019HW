@@ -149,7 +149,7 @@ int main(int argc, char* argv[]){
 
 	ifstream myfile(infile.c_str());
 	int x, y, s;
-	int n_node = 0;
+	int n_nodes = 0;
 	int n_source = 0;
 	int n_sink = 0;
 	vector<Node*> sourcevec;
@@ -164,8 +164,8 @@ int main(int argc, char* argv[]){
 			ss.str("");
 			ss.clear();
 			ss<<line;
-			if(n_node==0)
-				ss>>n_node;
+			if(n_nodes==0)
+				ss>>n_nodes;
 			else{
 				ss>>x>>y>>s;
 				if(s>0)
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
 			}
     	}
 		int n_edges = n_source + n_sink + n_source*n_sink;
-		Graph_FlowNetWorks graph(n_edges);
+		Graph_FlowNetWorks graph(n_nodes+2);
 		Node *Si;
 		Node *Tj;
 		for(int i = 0; i < n_source; i++)
@@ -200,7 +200,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		graph.ShowAdjMat();
-		graph.FordFulkerson(0, n_edges-1);    // 指定source為vertex(0), termination為vertex(5)
+		graph.FordFulkerson(0, n_nodes+1);    // 指定source為vertex(0), termination為vertex(5)
 	}
     return 0;
 }
