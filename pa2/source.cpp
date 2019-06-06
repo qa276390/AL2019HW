@@ -1,10 +1,12 @@
 // C++ code
+#include <iomanip>
 #include <iostream>
 #include <vector>
 #include <queue>
 #include <math.h>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <sstream>
 using namespace std;
 
@@ -13,7 +15,7 @@ public:
 	int length;
 	int flow;
 	int capacity;
-	Edge(){length=0;flow=0;capacity=0;}
+	Edge(){length=1e9;flow=0;capacity=0;}
 	Edge(int l, int f, int c){length=l;flow=f;capacity=c;}
 
 };
@@ -37,18 +39,40 @@ public:
     void FordFulkerson(int source, int termination);
     bool BFSfindExistingPath(std::vector<std::vector<Edge*> > graphResidual, 
                              int *predecessor, int source, int termination);
+    bool findNegativeCicle(std::vector<std::vector<Edge*> > graphResidual, 
+                             int *predecessor);
+	bool getNegativeCicle(int *predecessor, int x);
     int MinCapacity(std::vector<std::vector<Edge*> > graphResidual, 
                     int *predecessor, int termination);
-	void ShowAdjMat();
+	void ShowAdjMat(std::vector<std::vector<Edge*> > );
 
 };
-void Graph_FlowNetWorks::ShowAdjMat(){
-	cout<<"# of edges="<<num_vertex<<endl;
+void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
+	cout<<"# of nodes="<<num_vertex<<endl;
 	
-    for (int i = 0; i < num_vertex; i++){
+    for (int i = -1; i < num_vertex; i++){
+		cout<<setw(3)<<i<<" ";
 		for(int j = 0; j < num_vertex; j++)
-			cout<<AdjMatrix[i][j]->capacity<<" ";
+		{
+			if(i==-1)
+				cout<<setw(3)<<j<<" ";
+			else
+				cout<<graph[i][j]->flow<<"/"<<graph[i][j]->capacity<<" ";
+		
+		}
 		cout<<endl;
+   	} 
+	for (int i = -1; i < num_vertex; i++){
+		cout<<setw(3)<<i<<" ";
+		for(int j = 0; j < num_vertex; j++)
+		{	
+			if(i==-1)
+				cout<<setw(3)<<j<<" ";
+			else if(graph[i][j]->length==1e9)
+				cout<<" -  ";
+			else
+				cout<<setw(3)<<graph[i][j]->length<<" ";
+		}cout<<endl;
 	}
 
 }
@@ -60,6 +84,92 @@ Graph_FlowNetWorks::Graph_FlowNetWorks(int n):num_vertex(n){
 		for(int j = 0; j < num_vertex; j++)
 			AdjMatrix[i][j] = new Edge();
 	}
+}
+
+bool Graph_FlowNetWorks::getNegativeCicle(int *predecessor, int x){
+
+	bool visit[num_vertex+1];
+	memset(visit, false, sizeof(visit));
+	for(; !visit[x]; x=predecessor[x])
+		visit[x] = true;
+	cout<<"Negative Cicle:"<<endl;
+	cout<<x;
+	for(int a = predecessor[x]; a!=x; a=predecessor[a])
+		cout<<"<-"<<a;
+	cout<<endl;
+	
+	cout<<x;
+	int a = predecessor[x]; 
+	for(int i = 0;  i < 10; i++)
+	{	cout<<"<-"<<a;
+		a = predecessor[a];
+	}cout<<endl;
+}
+
+bool Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph, int *predecessor){
+    
+    std::vector<std::vector<Edge *> > extgraph;
+	extgraph.resize(num_vertex+1);
+    for (int i = 0; i < num_vertex+1; i++){
+        extgraph[i].resize(num_vertex+1);
+		for(int j = 0; j < num_vertex+1; j++)
+			if(i==num_vertex)
+			{
+				extgraph[i][j] = new Edge(0, 0, 1);	
+			}else if(j==num_vertex){
+				extgraph[i][j] = new Edge(0, 0, 0);
+			}
+			else{
+				extgraph[i][j] = graph[i][j];}
+	}
+	cout<<"***Redisual After Extension***"<<endl;
+	ShowAdjMat(extgraph);
+    int distance[num_vertex+1];
+	int n[num_vertex+1];
+	bool inqueue[num_vertex+1];
+
+    for (int i = 0; i < num_vertex+1; i++){
+        distance[i] = 1e9;     
+        predecessor[i] = -1;
+		n[i] = 0;
+		inqueue[i] = false;
+    }
+	int source = num_vertex;
+	distance[source] = 0;
+	predecessor[source] = source;
+	n[source] = 0;
+
+    std::queue<int> queue;
+    // BFS 從 s 開始, 也可以規定s一律訂成vertex(0)
+    queue.push(source);
+    cout<<"start"<<endl;
+	while(!queue.empty()){
+        int exploring = queue.front();
+		//cout<<exploring<<endl;
+		queue.pop();
+		inqueue[exploring] = false;
+		if(inqueue[predecessor[exploring]]){continue;}
+
+        for (int j = 0; j < num_vertex+1; ++j) {
+            if (extgraph[exploring][j]->length!=1e9 && extgraph[exploring][j]->capacity>0 && distance[exploring]+extgraph[exploring][j]->length < distance[j]) {
+            	distance[j] = distance[exploring] + extgraph[exploring][j]->length;
+				predecessor[j] = exploring;
+				n[j] = n[exploring] + 1;
+
+				if(n[j]>=num_vertex+1)
+				{
+					cout<<n[j]<<endl;
+					getNegativeCicle(predecessor, j);
+					return true;
+				}
+				if(!inqueue[j])
+				{
+					queue.push(j);
+					inqueue[j] = true;
+				}
+			}
+        }
+    }
 }
 
 bool Graph_FlowNetWorks::BFSfindExistingPath(std::vector<std::vector<Edge*> > graph, int *predecessor, int s, int t){
@@ -77,7 +187,7 @@ bool Graph_FlowNetWorks::BFSfindExistingPath(std::vector<std::vector<Edge*> > gr
 	while(!queue.empty()){
         int exploring = queue.front();
         for (int j = 0; j < num_vertex; j++) {
-            if (graph[exploring][j]->flow!=0 && visited[j]==0) {
+            if (graph[exploring][j]->capacity!=0 && visited[j]==0) {
                 queue.push(j);
                 visited[j] = 1;
                 predecessor[j] = exploring;
@@ -96,8 +206,8 @@ int Graph_FlowNetWorks::MinCapacity(std::vector<std::vector<Edge*> > graph,
     // 用predecessor[idx] 和 idx 表示一條edge
     // 找到在從s到t的path上, capacity最小的值, 存入min
     for (int idx = t; predecessor[idx] != -1; idx = predecessor[idx]){
-        if (graph[predecessor[idx]][idx]->flow!=0 && graph[predecessor[idx]][idx]->flow < min) {
-            min = graph[predecessor[idx]][idx]->flow;
+        if (graph[predecessor[idx]][idx]->capacity!=0 && graph[predecessor[idx]][idx]->capacity < min) {
+            min = graph[predecessor[idx]][idx]->capacity;
         }
     }
     return min;
@@ -111,11 +221,13 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
     for (int i = 0; i < num_vertex; i++){
 		for(int j = 0; j < num_vertex; j++){
 			e = AdjMatrix[i][j];
-			graphResidual[i][j] = new Edge(e->length, e->capacity, e->capacity);
+			graphResidual[i][j] = new Edge(e->length, 0, e->capacity);
 		}
 	}
     int maxflow = 0;                                           
     int predecessor[num_vertex];
+    int predecessor2[num_vertex];
+	//ShowAdjMat(AdjMatrix);
 
     // BFS finds augmenting path,
     while (BFSfindExistingPath(graphResidual, predecessor, source, termination)) {
@@ -124,12 +236,22 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
         for (int Y = termination; Y != source; Y = predecessor[Y]){
             // 更新 residual graph
             int X = predecessor[Y];
-            graphResidual[X][Y]->flow -= mincapacity;
-            graphResidual[Y][X]->flow += mincapacity;
+            graphResidual[X][Y]->capacity -= mincapacity;
+            graphResidual[Y][X]->capacity += mincapacity;
 			AdjMatrix[X][Y]->flow += mincapacity;
         }
     }
+	cout<<"***Redisual After Ford-Fulkerson***"<<endl;
+	ShowAdjMat(graphResidual);
     std::cout << "Possible Maximum Flow:"  << maxflow << std::endl;
+	ShowAdjMat(AdjMatrix);
+
+	while(findNegativeCicle(graphResidual, predecessor2)){
+		//cout<<"negative cicle found!"<<endl;
+
+		break;
+	
+	}
 }
 void Graph_FlowNetWorks::AddEdge(int from, int to, int capacity, int length){
 
@@ -188,6 +310,7 @@ int main(int argc, char* argv[]){
 			Si = sourcevec[i];
 			//from S to Si(i+1)
 			graph.AddEdge(0, i+1, Si->s, 0);
+			graph.AddEdge(i+1, 0, 0, 0);
 			//from Si to Tj
 			for(int j = 0; j < n_sink; j++)
 			{
@@ -195,11 +318,12 @@ int main(int argc, char* argv[]){
 				if(i==0)
 				{
 					graph.AddEdge(j+1+(n_source), n_source+n_sink+1, -(Tj->s), 0);
+					graph.AddEdge(n_source+n_sink+1,j+1+(n_source), 0, 0);
 				}
 				graph.AddEdge(i+1, j+1+(n_source), Si->s, sqrt(pow((Si->x - Tj->x),2)+pow((Si->y - Tj->y),2)));
+				graph.AddEdge(j+1+(n_source), i+1, 0, -sqrt(pow((Si->x - Tj->x),2)+pow((Si->y - Tj->y),2)));
 			}
 		}
-		graph.ShowAdjMat();
 		graph.FordFulkerson(0, n_nodes+1);    // 指定source為vertex(0), termination為vertex(5)
 	}
     return 0;
