@@ -1,4 +1,4 @@
-# Paint Bucket
+# Optimal Wiring Topology
 ## Getting Start
 compile the file first,
 ```
@@ -11,12 +11,12 @@ make
 
 The program should be invoked like this:
 ```
-./paintBucket [image*.in] [x] [y] [color] [image*.out]
+./em [input file] [output file]
 ```
-- [image*.in]: The input image file. This file has h + 1 lines. two integers w and h, which specify the size of the image (w*h). In the following h lines, each
-line has w characters (from 0 to F), indicates the color of each pixel from the upper left corner to the bottom right corner on the image.
+- [input file]: The input file describes the current source S and sink T information. The first line describes the total
+number sources and sinks (m+n). In the following (m+n) lines, each line indicates the x-coordinate,
+y-coordinate, and flow of a current source or sink. A source/sink is associated with a
+positive/negative flow.
 
-- [x]: An integer to specify the x-coordinate of the selected pixel. x = 0 means the leftmost column.
-(0 ≤ x < w)
-- [y]: An integer to specify the y-coordinate of the selected pixel. y = 0 means the first (uppermost) row. (0 ≤ y < h)
-- [color]: An character to indicate the color to fill. (0 ~ 9 and A ~ F)
+- [output file]: The program first prints the optimal total wire area. Then, the following lines describe the optimal wiring topology. Each line indicates the x coordinate and y coordinate of a source, the x coordinate and y coordinate of a sink, and the corresponding wire width.
+All lines are lexicographically sorted in ascending order of (x_source, y_source, x_sink, y_sink, width).
