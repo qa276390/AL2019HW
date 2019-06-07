@@ -1,4 +1,5 @@
 // C++ code
+#include <time.h>
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -11,6 +12,8 @@
 #include <stack>
 #include <cstdlib>
 using namespace std;
+clock_t start;
+clock_t end;
 
 class Edge{
 public:
@@ -69,8 +72,6 @@ void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
 		{	wireArea += (AdjMatrix[i][j]->flow * abs(AdjMatrix[i][j]->length));
 			if(i!=0 && i!=num_vertex-1 && j!=0 && j!=num_vertex-1)
 				totalflow += AdjMatrix[i][j]->flow;
-			if(AdjMatrix[i][j]->flow>AdjMatrix[i][j]->capacity)
-				cout<<"***flow>capacity!***"<<endl;
 		}}
 	fout<<wireArea<<endl;
 	for (int i = 1; i < num_vertex-1; i++){
@@ -85,10 +86,10 @@ void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
 		}
    	}
 	fout.close();
-	cout<<"Total Flow="<<totalflow<<endl;
+	//cout<<"Total Flow="<<totalflow<<endl;
 }
 void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
-	cout<<"# of nodes="<<num_vertex<<endl;
+	//cout<<"# of nodes="<<num_vertex<<endl;
 	float wireArea = 0.0;
     for (int i = -1; i < num_vertex; i++){
 		cout<<setw(3)<<i<<" ";
@@ -137,10 +138,11 @@ bool Graph_FlowNetWorks::getNegativeCicle(int *predecessor, int x ){
 	memset(visit, false, sizeof(visit));
 	for(; !visit[x]; x=predecessor[x])
 		visit[x] = true;
-	cout<<x;
+	//cout<<x;
 	for(int a = predecessor[x]; a!=x; a=predecessor[a])
-		cout<<"<-"<<a;
-	cout<<endl;	
+	{	//cout<<"<-"<<a;
+	}
+	//cout<<endl;	
 }
 
 int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph, int *predecessor){
@@ -165,8 +167,8 @@ int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph
 			else{
 				extgraph[i][j] = graph[i][j];}
 	}
-	cout<<"***Redisual After Extension***"<<endl;
-	ShowAdjMat(extgraph);
+	//cout<<"***Redisual After Extension***"<<endl;
+	//ShowAdjMat(extgraph);
     int distance[num_vertex+1];
 	int n[num_vertex+1];
 	bool inqueue[num_vertex+1];
@@ -183,9 +185,8 @@ int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph
 	n[source] = 0;
 
     std::queue<int> queue;
-    // BFS 從 s 開始, 也可以規定s一律訂成vertex(0)
     queue.push(source);
-    cout<<"start"<<endl;
+    //cout<<"start"<<endl;
 	while(!queue.empty()){
         int exploring = queue.front();
 		//cout<<exploring<<endl;
@@ -257,13 +258,13 @@ int Graph_FlowNetWorks::MinCapacity(std::vector<std::vector<Edge*> > graph,
         if (graph[predecessor[idx]][idx]->capacity!=0 && graph[predecessor[idx]][idx]->capacity < min) {
             min = graph[predecessor[idx]][idx]->capacity;
         }
-		cout<<" "<<idx<<"/"<<graph[predecessor[idx]][idx]->capacity<<" ";
+	//	cout<<" "<<idx<<"/"<<graph[predecessor[idx]][idx]->capacity<<" ";
 		if(predecessor[idx] == t)
 			break;
 		idx = predecessor[idx];
 
 	}
-	cout<<endl;
+	//cout<<endl;
 	/*
     for (int idx = t; predecessor[idx] != -1; idx = predecessor[idx]){
         if (graph[predecessor[idx]][idx]->capacity!=0 && graph[predecessor[idx]][idx]->capacity < min) {
@@ -301,10 +302,10 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
 			AdjMatrix[X][Y]->flow += mincapacity;
         }
     }
-	cout<<"***Redisual After Ford-Fulkerson***"<<endl;
-	ShowAdjMat(graphResidual);
-    std::cout << "Possible Maximum Flow:"  << maxflow << std::endl;
-	ShowAdjMat(AdjMatrix);
+	//cout<<"***Redisual After Ford-Fulkerson***"<<endl;
+	//ShowAdjMat(graphResidual);
+    //std::cout << "Possible Maximum Flow:"  << maxflow << std::endl;
+	//ShowAdjMat(AdjMatrix);
 	
 	int x;
 
@@ -317,30 +318,35 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
 			visit[x] = true;
 
         int mincapacity = MinCapacity(graphResidual, predecessor2, x);
-		cout<<"min capacity="<<mincapacity<<endl;
-		cout<<x;
+		//cout<<"min capacity="<<mincapacity<<endl;
+		//cout<<x;
 		pred_stack.push(x);
 		for(int a = predecessor2[x]; a!=x; a=predecessor2[a])
-		{	cout<<"<-"<<a;
+		{	
+			//cout<<"<-"<<a;
 			pred_stack.push(a);
 		}
 		pred_stack.push(x);
-		cout<<endl;
+		//cout<<endl;
 
 		RefreshFlow(AdjMatrix, graphResidual, pred_stack, mincapacity);
-		cout<<"stack size = "<<pred_stack.size()<<endl;	
 		//if(pred_stack.size()>10)
 		//	break;
 		//break;
-    	std::cout << "***AdjMatrix***" << std::endl;
-		ShowAdjMat(AdjMatrix);
+    	//std::cout << "***AdjMatrix***" << std::endl;
+		//ShowAdjMat(AdjMatrix);
+		if((clock()-start)/CLOCKS_PER_SEC>840)
+		{
+			cout<<"Time's up"<<endl;
+			break;}
 	
 	}
+	/*
 	cout<<"***Redisual After ALL***"<<endl;
 	ShowAdjMat(graphResidual);
     std::cout << "***AdjMatrix***" << std::endl;
 	ShowAdjMat(AdjMatrix);
-	
+	*/
 	//ComputeWireArea()
 }
 
@@ -353,24 +359,24 @@ void Graph_FlowNetWorks::RefreshFlow(std::vector<std::vector<Edge*> > graph, std
 	{
 
 		to = order.top();
-		cout<<"from:"<<from<<" to:"<<to;
+		//cout<<"from:"<<from<<" to:"<<to;
 		order.pop();
 		if(graph[from][to]->length<0)
 		{	
-				cout<<"("<<graph[to][from]->flow<<")";
+				//cout<<"("<<graph[to][from]->flow<<")";
 				graph[to][from]->flow -= mincapacity;
-				cout<<"/("<<graph[to][from]->flow<<")";
-				cout<<" is reverse.";
+				//cout<<"/("<<graph[to][from]->flow<<")";
+				//cout<<" is reverse.";
 		}else
-		{	cout<<"("<<graph[from][to]->flow<<")";
+		{	//cout<<"("<<graph[from][to]->flow<<")";
 			graph[from][to]->flow += mincapacity;
-			cout<<"/("<<graph[from][to]->flow<<")";
+			//cout<<"/("<<graph[from][to]->flow<<")";
 		}
 		graphResidual[from][to]->capacity -= mincapacity;
 		graphResidual[to][from]->capacity += mincapacity;
 
 		from = to;
-		cout<<endl;
+		//cout<<endl;
 	}
 
 }
@@ -381,7 +387,7 @@ void Graph_FlowNetWorks::AddEdge(int from, int to, int capacity, int length){
 }
 
 int main(int argc, char* argv[]){
-
+	start = clock();
 	if(argc!=3)
 	{	cout<<"please add 2 parameters!"<<endl;
 		return 0;		
