@@ -7,9 +7,6 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
-#include <vector>
-#include <queue>
-#include <fstream>
 #include <cmath>
 #include <sstream>
 #include <climits>
