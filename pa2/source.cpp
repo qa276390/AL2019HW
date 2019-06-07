@@ -9,6 +9,7 @@
 #include <cstring>
 #include <sstream>
 #include <stack>
+#include <cstdlib>
 using namespace std;
 
 class Edge{
@@ -47,11 +48,41 @@ public:
                     int *predecessor, int termination);
 	void ShowAdjMat(std::vector<std::vector<Edge*> > );
 	void RefreshFlow(std::vector<std::vector<Edge*> > graph, std::vector<std::vector<Edge*> > graphResidual, stack<int> order, int mincapacity);
-
+	vector<vector<Edge *> > getAdjMatrix(){return AdjMatrix;}
+	void outputResult(std::vector<Node*> Nodes, string outfile);
 };
+void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
+	float wireArea = 0.0;
+	Node* from;
+	Node* to;
+	int f;
+    ofstream fout(outfile.c_str());
+
+	if(!fout)
+	{
+		cout<<"Fail to open file"<<endl;
+		exit(0);
+	}
+	for (int i = 1; i < num_vertex-1; i++){
+		for(int j = 1; j < num_vertex-1; j++)
+		{	wireArea += (AdjMatrix[i][j]->flow * abs(AdjMatrix[i][j]->length));}}
+	fout<<wireArea<<endl;
+	for (int i = 1; i < num_vertex-1; i++){
+		for(int j = 1; j < num_vertex-1; j++)
+		{
+			if((f=AdjMatrix[i][j]->flow)>0)
+			{
+				from  = Nodes[i];
+				to = Nodes[j];
+				fout<<from->x<<" "<<from->y<<" "<<to->x<<" "<<to->y<<" "<<f<<endl;	
+			}
+		}
+   	}
+	fout.close();
+}
 void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
 	cout<<"# of nodes="<<num_vertex<<endl;
-	
+	float wireArea = 0.0;
     for (int i = -1; i < num_vertex; i++){
 		cout<<setw(3)<<i<<" ";
 		for(int j = 0; j < num_vertex; j++)
@@ -59,11 +90,13 @@ void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
 			if(i==-1)
 				cout<<setw(3)<<j<<" ";
 			else
-				cout<<graph[i][j]->flow<<"/"<<graph[i][j]->capacity<<" ";
+			{	cout<<graph[i][j]->flow<<"/"<<graph[i][j]->capacity<<" ";
+				wireArea += (graph[i][j]->flow * abs(graph[i][j]->length));
+			}
 		
 		}
 		cout<<endl;
-   	} 
+   	}/* 
 	for (int i = -1; i < num_vertex; i++){
 		cout<<setw(3)<<i<<" ";
 		for(int j = 0; j < num_vertex; j++)
@@ -75,7 +108,9 @@ void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
 			else
 				cout<<setw(3)<<graph[i][j]->length<<" ";
 		}cout<<endl;
-	}
+	}*/
+	cout<<"Total Wire Area  = "<<wireArea<<endl;
+	
 
 }
 Graph_FlowNetWorks::Graph_FlowNetWorks(int n):num_vertex(n){
@@ -286,6 +321,7 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
 	ShowAdjMat(graphResidual);
     std::cout << "***AdjMatrix***" << std::endl;
 	ShowAdjMat(AdjMatrix);
+	
 	//ComputeWireArea()
 }
 
@@ -362,10 +398,20 @@ int main(int argc, char* argv[]){
 				}
 			}
     	}
+		vector<Node*> Nodes;
+		Nodes.push_back(NULL);
+		for(int i = 1; i < n_nodes+1; i++)
+		{
+			if(i<=n_source)
+				Nodes.push_back(sourcevec[i-1]);
+			else
+				Nodes.push_back(sinkvec[i-1-n_source]);
+		}
 		int n_edges = n_source + n_sink + n_source*n_sink;
 		Graph_FlowNetWorks graph(n_nodes+2);
 		Node *Si;
 		Node *Tj;
+		int capa;
 		for(int i = 0; i < n_source; i++)
 		{
 			Si = sourcevec[i];
@@ -381,11 +427,16 @@ int main(int argc, char* argv[]){
 					graph.AddEdge(j+1+(n_source), n_source+n_sink+1, -(Tj->s), 0);
 					graph.AddEdge(n_source+n_sink+1,j+1+(n_source), 0, 0);
 				}
-				graph.AddEdge(i+1, j+1+(n_source), Si->s, (pow((Si->x - Tj->x),2)+pow((Si->y - Tj->y),2)));
-				graph.AddEdge(j+1+(n_source), i+1, 0, -(pow((Si->x - Tj->x),2)+pow((Si->y - Tj->y),2)));
+				capa = (Si->s < (-Tj->s))? Si->s : -(Tj->s);
+				graph.AddEdge(i+1, j+1+(n_source), capa, (abs((Si->x - Tj->x))+abs((Si->y - Tj->y))));
+				graph.AddEdge(j+1+(n_source), i+1, 0, -(abs((Si->x - Tj->x))+abs((Si->y - Tj->y))));
 			}
 		}
-		graph.FordFulkerson(0, n_nodes+1);    // 指定source為vertex(0), termination為vertex(5)
+		graph.FordFulkerson(0, n_nodes+1);  
+		
+		graph.outputResult(Nodes, outfile);
+			
+
 	}
     return 0;
 }
