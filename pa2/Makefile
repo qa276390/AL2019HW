@@ -1,4 +1,4 @@
-all:source.cpp
-	g++ -g source.cpp -o em -lrt -O3
+all:mincostmaxflow.cpp
+	g++ -g mincostmaxflow.cpp -o mcmf -lrt -O3
 clean:
-	rm -rf em
+	rm -rf mcmf
