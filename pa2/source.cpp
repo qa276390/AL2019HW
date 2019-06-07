@@ -53,6 +53,7 @@ public:
 };
 void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
 	float wireArea = 0.0;
+	int totalflow = 0;
 	Node* from;
 	Node* to;
 	int f;
@@ -63,9 +64,14 @@ void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
 		cout<<"Fail to open file"<<endl;
 		exit(0);
 	}
-	for (int i = 1; i < num_vertex-1; i++){
-		for(int j = 1; j < num_vertex-1; j++)
-		{	wireArea += (AdjMatrix[i][j]->flow * abs(AdjMatrix[i][j]->length));}}
+	for (int i = 0; i < num_vertex; i++){
+		for(int j = 0; j < num_vertex; j++)
+		{	wireArea += (AdjMatrix[i][j]->flow * abs(AdjMatrix[i][j]->length));
+			if(i!=0 && i!=num_vertex-1 && j!=0 && j!=num_vertex-1)
+				totalflow += AdjMatrix[i][j]->flow;
+			if(AdjMatrix[i][j]->flow>AdjMatrix[i][j]->capacity)
+				cout<<"***flow>capacity!***"<<endl;
+		}}
 	fout<<wireArea<<endl;
 	for (int i = 1; i < num_vertex-1; i++){
 		for(int j = 1; j < num_vertex-1; j++)
@@ -79,6 +85,7 @@ void Graph_FlowNetWorks::outputResult(std::vector<Node*> Nodes, string outfile){
 		}
    	}
 	fout.close();
+	cout<<"Total Flow="<<totalflow<<endl;
 }
 void Graph_FlowNetWorks::ShowAdjMat(std::vector<std::vector<Edge*> > graph){
 	cout<<"# of nodes="<<num_vertex<<endl;
@@ -145,9 +152,15 @@ int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph
 		for(int j = 0; j < num_vertex+1; j++)
 			if(i==num_vertex)
 			{
-				extgraph[i][j] = new Edge(0, 0, 1);	
+
+				extgraph[i][j] = new Edge(1e9, 0, 0);
 			}else if(j==num_vertex){
-				extgraph[i][j] = new Edge(0, 0, 0);
+				//extgraph[i][j] = new Edge(1e9, 0, 0);
+				if(i==0 || i==num_vertex-1)
+					extgraph[i][j] = new Edge(1e9, 0, 0);
+				else
+					extgraph[i][j] = new Edge(0, 0, 1);	
+				
 			}
 			else{
 				extgraph[i][j] = graph[i][j];}
@@ -164,7 +177,7 @@ int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph
 		n[i] = 0;
 		inqueue[i] = false;
     }
-	int source = num_vertex;
+	int source = 1;
 	distance[source] = 0;
 	predecessor[source] = source;
 	n[source] = 0;
@@ -188,9 +201,9 @@ int Graph_FlowNetWorks::findNegativeCicle(std::vector<std::vector<Edge*> > graph
 
 				if(n[j]>=num_vertex+1)
 				{
-					cout<<n[j]<<endl;
-					cout<<j<<endl;
-					getNegativeCicle(predecessor, j);
+					//cout<<n[j]<<endl;
+					//cout<<j<<endl;
+					//getNegativeCicle(predecessor, j);
 					return j;
 				}
 				if(!inqueue[j])
@@ -240,13 +253,15 @@ int Graph_FlowNetWorks::MinCapacity(std::vector<std::vector<Edge*> > graph,
 	int idx = t;
 	while(predecessor[idx]!=-1)
 	{
-		if(predecessor[idx] == t)
-			break;
+
         if (graph[predecessor[idx]][idx]->capacity!=0 && graph[predecessor[idx]][idx]->capacity < min) {
             min = graph[predecessor[idx]][idx]->capacity;
         }
 		cout<<" "<<idx<<"/"<<graph[predecessor[idx]][idx]->capacity<<" ";
+		if(predecessor[idx] == t)
+			break;
 		idx = predecessor[idx];
+
 	}
 	cout<<endl;
 	/*
@@ -311,7 +326,11 @@ void Graph_FlowNetWorks::FordFulkerson(int source, int termination){
 		}
 		pred_stack.push(x);
 		cout<<endl;
+
 		RefreshFlow(AdjMatrix, graphResidual, pred_stack, mincapacity);
+		cout<<"stack size = "<<pred_stack.size()<<endl;	
+		//if(pred_stack.size()>10)
+		//	break;
 		//break;
     	std::cout << "***AdjMatrix***" << std::endl;
 		ShowAdjMat(AdjMatrix);
@@ -334,19 +353,24 @@ void Graph_FlowNetWorks::RefreshFlow(std::vector<std::vector<Edge*> > graph, std
 	{
 
 		to = order.top();
-		cout<<"from:"<<from<<" to:"<<to<<endl;
+		cout<<"from:"<<from<<" to:"<<to;
 		order.pop();
 		if(graph[from][to]->length<0)
 		{	
-				cout<<"from:"<<from<<" to:"<<to<<" need to reverse."<<endl;
+				cout<<"("<<graph[to][from]->flow<<")";
 				graph[to][from]->flow -= mincapacity;
+				cout<<"/("<<graph[to][from]->flow<<")";
+				cout<<" is reverse.";
 		}else
-		{	graph[from][to]->flow += mincapacity;
+		{	cout<<"("<<graph[from][to]->flow<<")";
+			graph[from][to]->flow += mincapacity;
+			cout<<"/("<<graph[from][to]->flow<<")";
 		}
 		graphResidual[from][to]->capacity -= mincapacity;
 		graphResidual[to][from]->capacity += mincapacity;
 
 		from = to;
+		cout<<endl;
 	}
 
 }
