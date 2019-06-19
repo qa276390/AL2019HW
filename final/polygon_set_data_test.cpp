@@ -84,8 +84,7 @@ void polygon_set_data_test2()
 
 void polygon_set_data_test3()
 {
-	bool vertical = false;
-    //typedef point_data<int> point_type;
+	bool vertical = true;
     typedef point_data<int> point_type;
     typedef polygon_90_data<int> polygon_type;
     typedef polygon_90_set_data<int> polygon_set_type;
@@ -132,20 +131,22 @@ void polygon_set_data_test3()
     	//BOOST_TEST_EQ(8, pset.size());
 	}
 
+
+	/*************** showing result ********************/
 	std::vector< polygon_type > polyresults;
-	//typedef polygon_90_data::iterator_type iterator_type;
-	//std::set<int>::iterator it;
-	//typedef Cpolygon::const_iterator iterator_type;
-	/*
+	polygon_type::iterator_type it;
+	
 	allpset.get_polygons(polyresults);
 
 	for(int i = 0; i < polyresults.size(); ++i)
 	{
-
+		std::cout<<"i="<<i<<std::endl;
 		for(it=polyresults[i].begin();it!=polyresults[i].end();it++)
-			std::cout<<*it<<" ";
-		std::cout<<std::endl;
-	}*/
+		{	
+			std::cout<<(*it).x()<<" ";
+			std::cout<<(*it).y()<<std::endl;
+		}
+	}
 
 }
 
