@@ -13,18 +13,16 @@ using namespace boost::polygon;
 using namespace boost::polygon::operators;
 
 // oper1 records every operation, oper2 records every point of every polygon per operation
-void polygon_set_data_test3(std::vector<std::string> oper1, std::vector<int>** oper2, std::vector<int> num_of_polygon_per_oper){
+std::vector< rectangle_data<int> > polygon_set_data_test3(std::vector<std::string> oper1, std::vector<int>** oper2, std::vector<int> num_of_polygon_per_oper){
     int num_of_oper = oper1.size();
 	bool vertical = true;
     typedef point_data<int> point_type;
-    typedef polygon_90_data<int> polygon_type;
+    typedef polygon_90_with_holes_data<int> polygon_type;
     typedef polygon_90_set_data<int> polygon_set_type;
     std::vector< rectangle_data<int> > rects_v;
     std::vector< rectangle_data<int> > rects_h;
 
-
     polygon_set_type allpset;
-
     // 第一個operation比較不一樣，其第一個polygon為起始allpset
     for (int i = 0; i < 1; i++){
         int num_of_polygon = num_of_polygon_per_oper[i];
@@ -91,90 +89,33 @@ void polygon_set_data_test3(std::vector<std::string> oper1, std::vector<int>** o
     }
     std::cout << "the area of final polygon is " << area(allpset) << std::endl;
 
-    get_rectangles(rects_v, allpset, VERTICAL);
-    std::cout << "rects_v has " << rects_v.size() << " polygon." << std::endl;
-    long unsigned total_v = 0;
-    for (int i = 0; i < rects_v.size(); i++){
-        std::cout << "The area of vect_v[" << i << "] is " << area(rects_v[i]) << "." << std::endl;
-        total_v += area(rects_v[i]);
+    if (oper1[oper1.size()-1] == "SV"){
+        get_rectangles(rects_v, allpset, VERTICAL);
+        std::cout << "rects_v has " << rects_v.size() << " polygon." << std::endl;
+        long unsigned total_v = 0;
+        for (int i = 0; i < rects_v.size(); i++){
+            // std::cout << "The area of vect_v[" << i << "] is " << area(rects_v[i]) << "." << std::endl;
+            total_v += area(rects_v[i]);
+        }
+        std::cout << "total rects_v area is " << total_v << std::endl;
+        return rects_v;
     }
-    std::cout << "total rects_v area is " << total_v << std::endl;
-    get_rectangles(rects_h, allpset, HORIZONTAL);
-    std::cout << "rects_h has " << rects_h.size() << " polygon." << std::endl;
-    long unsigned total_h = 0;
-    for (int i = 0; i < rects_h.size(); i++){
-        std::cout << "The area of vect_h[" << i << "] is " << area(rects_h[i]) << "." << std::endl;
-        total_h += area(rects_h[i]);
+    else if (oper1[oper1.size()-1] == "SH"){
+        get_rectangles(rects_h, allpset, HORIZONTAL);
+        std::cout << "rects_h has " << rects_h.size() << " polygon." << std::endl;
+        long unsigned total_h = 0;
+        for (int i = 0; i < rects_h.size(); i++){
+            // std::cout << "The area of vect_h[" << i << "] is " << area(rects_h[i]) << "." << std::endl;
+            total_h += area(rects_h[i]);
+        }
+        std::cout << "total rects_h area is " << total_h << std::endl;
+        return rects_h;
     }
-    std::cout << "total rects_h area is " << total_h << std::endl;
-    //     if (oper1[i][0] == "M"){
-    //         polygon_set_type allpset;
-            
-    //         std::vector<point_type> data;
-    //         for (int k = 0; k < oper2[i][0]/2; k++){
-    //             data.push_back(point_type(oper2[i][0][2*k], oper2[i][0][2*k + 1]));
-    //         }
-    //         polygon_type polygon;
-    //         polygon.set(data.begin(), data.end());
-    //         polygon_set_type pset;
-    //         pset += polygon;
-    //         allpset = pset; // 一開始令allpset = 第一個polygon的pset
 
-    //         for (int j = 1; j < num_of_polygon; j++){
-    //             std::vector<point_type> data1;
-    //             for (int k = 0; k < oper2[i][j]/2; k++){
-    //                 data1.push_back(point_type(oper2[i][j][2*k], oper2[i][j][2*k + 1]));
-    //             }
-    //             polygon_type polygon1;
-    //             polygon1.set(data1.begin(), data1.end());
-    //             polygon_set_type pset1;
-    //             pset1 += polygon1;
-
-    //             allpset += pset1;
-    //         }
-    //     }
-    //     else if (oper1[i][0] == "C"){
-    //         polygon_set_type allpset;
-            
-    //         std::vector<point_type> data;
-    //         for (int k = 0; k < oper2[i][0]/2; k++){
-    //             data.push_back(point_type(oper2[i][0][2*k], oper2[i][0][2*k + 1]));
-    //         }
-    //         polygon_type polygon;
-    //         polygon.set(data.begin(), data.end());
-    //         polygon_set_type pset;
-    //         pset += polygon;
-    //         allpset = pset; // 一開始令allpset = 第一個polygon的pset
-
-    //         for (int j = 1; j < num_of_polygon; j++){
-    //             std::vector<point_type> data1;
-    //             for (int k = 0; k < oper2[i][j]/2; k++){
-    //                 data1.push_back(point_type(oper2[i][j][2*k], oper2[i][j][2*k + 1]));
-    //             }
-    //             polygon_type polygon1;
-    //             polygon1.set(data1.begin(), data1.end());
-    //             polygon_set_type pset1;
-    //             pset1 += polygon1;
-
-    //             allpset -= pset1;
-    //         }
-    //     }
-    // }
-
-	
-	// if(vertical){
-	// 	get_rectangles(rects, allpset, VERTICAL);
-	// 	//const rectangle_data<int>& r = rects[0];
-    // 	//BOOST_TEST_EQ(32.0, area(polygon));
-    // 	//BOOST_TEST_EQ(32.0, area(pset));
-    // 	BOOST_TEST_EQ(31.0, area(allpset));
-   	// 	BOOST_TEST_EQ(31.0, area(rects[0]));
-    // 	BOOST_TEST_EQ(31.0, area(rects[1]));
-    // 	BOOST_TEST_EQ(31.0, area(rects[2]));
-    // 	//BOOST_TEST_EQ(8, pset.size());
-	// }
-
-
+    else {
+        std::cerr << "Invalid input operation." << std::endl;
+        exit(1);
+    }
 	// /*************** showing result ********************/
 	// std::vector< polygon_type > polyresults;
 	// polygon_type::iterator_type it;
@@ -194,7 +135,7 @@ void polygon_set_data_test3(std::vector<std::string> oper1, std::vector<int>** o
 
 
 int main(int argc, char* argv[]){
-    if (argc != 2){
+    if (argc != 3){
         std::cerr << "Invalid input parameter. Valid input format is ./em [input file name] [output file name]" << std::endl;
         exit(1);
     }
@@ -312,13 +253,18 @@ int main(int argc, char* argv[]){
     inFile2.close();
     
 
-    polygon_set_data_test3(oper1, oper2, num_of_polygon_per_oper);
+    std::ofstream outFile;
+    outFile.open(argv[2]);
+    std::string a = "RECT";
 
+    std::vector< rectangle_data<int> > result;
+    result = polygon_set_data_test3(oper1, oper2, num_of_polygon_per_oper);
 
+    for (int i = 0; i < result.size(); i++){
+        outFile << a << " ";
+        outFile << result[i].get(WEST) << " " << result[i].get(SOUTH) << " " << result[i].get(EAST) << " " << result[i].get(NORTH) << " ;" << std::endl; 
+    }
 
-    // ofstream outFile;
-    // outFile.open(argv[2]);
-    // string a = "RECT";
-
+    outFile.close();
     return 0;
 }
