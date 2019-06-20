@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <cstdlib>
+#include <time.h>
 
 #include <boost/core/lightweight_test.hpp>
 #include <boost/polygon/polygon.hpp>
@@ -74,7 +75,7 @@ std::vector< rectangle_data<int> > polygon_set_data_test3(std::vector<std::strin
                 std::cout << "This Operation is not correct." << std::endl;
             }   
         }
-        std::cout << "The area of operation " << i+1 << " is " << area(allpset) << std::endl;
+        // std::cout << "The area of operation " << i+1 << " is " << area(allpset) << std::endl;
     }
 
     for (int i = 1; i < num_of_oper-1; i++){
@@ -108,9 +109,9 @@ std::vector< rectangle_data<int> > polygon_set_data_test3(std::vector<std::strin
                 std::cout << "This Operation is not correct." << std::endl;
             }   
         }
-        std::cout << "The area of operation " << i+1 << " is " << area(allpset) << std::endl;
+        // std::cout << "The area of operation " << i+1 << " is " << area(allpset) << std::endl;
     }
-    std::cout << "the area of final polygon is " << area(allpset) << std::endl;
+    // std::cout << "the area of final polygon is " << area(allpset) << std::endl;
 
     if (oper1[oper1.size()-1] == "SV"){
         get_rectangles(rects_v, allpset, VERTICAL);
@@ -136,8 +137,14 @@ std::vector< rectangle_data<int> > polygon_set_data_test3(std::vector<std::strin
     }
 
     else {
-        std::cerr << "Invalid input operation." << std::endl;
-        exit(1);
+        get_rectangles(rects_h, allpset, HORIZONTAL);
+        get_rectangles(rects_v, allpset, VERTICAL);
+        if (rects_h.size() <= rects_v.size()){
+            return rects_h;
+        }
+        else {
+            return rects_v;
+        }
     }
 	// /*************** showing result ********************/
 	// std::vector< polygon_type > polyresults;
@@ -158,6 +165,7 @@ std::vector< rectangle_data<int> > polygon_set_data_test3(std::vector<std::strin
 
 
 int main(int argc, char* argv[]){
+    clock_t tStart = clock();
     if (argc != 3){
         std::cerr << "Invalid input parameter. Valid input format is ./em [input file name] [output file name]" << std::endl;
         exit(1);
@@ -307,5 +315,6 @@ int main(int argc, char* argv[]){
     }
 
     outFile.close();
+    std::cout << "Time taken: " << (double)(clock() - tStart)/CLOCKS_PER_SEC << std::endl;
     return 0;
 }
