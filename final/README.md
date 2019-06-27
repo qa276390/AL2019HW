@@ -1,4 +1,8 @@
 # Rectilinear Polygon Operations for Physical Design
+
+## Dependencies
+Please install [Boost.Polygon](https://www.boost.org/doc/libs/1_70_0/libs/polygon/doc/index.htm) before compile the code. 
+
 ## Getting Start
 compile the file first,
 ```
